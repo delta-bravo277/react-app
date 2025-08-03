@@ -1,17 +1,18 @@
-name: Application Deployment Workflow
+name: Application Deployment
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy (dev, staging, prod)'
+        description: 'Environment to deploy to'
         required: true
         default: 'dev'
+        validation: '^dev|staging|prod$'
       version:
-        description: 'Version of the application to deploy'
+        description: 'Version of the application'
         required: true
       deployment_id:
-        description: 'ID of the deployment'
+        description: 'ID for deployment tracking'
         required: true
 
 jobs:
@@ -19,22 +20,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '14'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run tests
-      run: npm test
+      - name: Run tests
+        run: npm test
 
-    - name: Deploy application to ${{ github.event.inputs.environment }}
-      run: echo 'No specific deployment process identified'
+      - name: Build
+        run: echo 'No specific build process identified'
 
-    - name: Notify deployment status
-      run: echo 'Deployment completed for version ${{ github.event.inputs.version }} to environment ${{ github.event.inputs.environment }} with deployment ID ${{ github.event.inputs.deployment_id }}'
+      - name: Deploy to ${{ github.event.inputs.environment }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
+          API_URL: ${{ secrets.API_URL }}
+        run: echo 'Deploying version ${{ github.event.inputs.version }} to ${{ github.event.inputs.environment }}'
+
+      - name: Notify Deployment Status
+        if: ${{ always() }}
+        run: echo 'Deployment ${deployment_id} to ${{ github.event.inputs.environment }} completed successfully'

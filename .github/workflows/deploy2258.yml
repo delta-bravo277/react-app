@@ -1,0 +1,48 @@
+name: Application Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to (dev, staging, prod)'
+        required: true
+        default: 'dev'
+      version:
+        description: 'Version of the application to deploy'
+        required: true
+      deployment_id:
+        description: 'ID of the deployment'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [14.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Deploy to ${{ github.event.inputs.environment }}
+        run: echo "Deploying version ${{ github.event.inputs.version }} to environment ${{ github.event.inputs.environment }} with deployment ID ${{ github.event.inputs.deployment_id }}"
+
+      - name: Notify on completion
+        run: echo "Deployment completed successfully"
+
+      - name: Notify on failure
+        if: failure()
+        run: echo "Deployment failed"

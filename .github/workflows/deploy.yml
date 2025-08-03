@@ -1,27 +1,22 @@
-name: Application Deployment
+name: Application Deployment Workflow
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: 'Environment to deploy (dev, staging, prod)'
         required: true
         default: 'dev'
       version:
-        description: 'Version of the application'
+        description: 'Version of the application to deploy'
         required: true
       deployment_id:
-        description: 'Deployment ID'
+        description: 'ID of the deployment'
         required: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        environment: [dev, staging, prod]
 
     steps:
     - name: Checkout code
@@ -38,11 +33,8 @@ jobs:
     - name: Run tests
       run: npm test
 
-    - name: Build application
-      run: echo 'No specific build process identified'
-
-    - name: Deploy to ${{ matrix.environment }}
-      run: echo 'Deploying to ${{ matrix.environment }} environment'
+    - name: Deploy application to ${{ github.event.inputs.environment }}
+      run: echo 'No specific deployment process identified'
 
     - name: Notify deployment status
-      run: echo 'Deployment completed for version ${{ github.event.inputs.version }} to ${{ matrix.environment }} environment'
+      run: echo 'Deployment completed for version ${{ github.event.inputs.version }} to environment ${{ github.event.inputs.environment }} with deployment ID ${{ github.event.inputs.deployment_id }}'
